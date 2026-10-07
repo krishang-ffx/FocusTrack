@@ -1,0 +1,10 @@
+{
+  "name":"FocusTrack",
+  "short_name":"FocusTrack",
+  "description":"Focus and Time Tracker",
+  "start_url":"./index.html",
+  "display":"standalone",
+  "background_color":"#f5f7fb",
+  "theme_color":"#6366f1",
+  "orientation":"portrait"
+}

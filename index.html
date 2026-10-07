@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#6366f1">
+<link rel="manifest" href="manifest.webmanifest">
+<title>FocusTrack</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f5f7fb;color:#111827;padding-bottom:80px}
+body.dark{background:#0b1020;color:#f9fafb}.app{max-width:900px;margin:auto;padding:18px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.brand{font-size:25px;font-weight:800}.brand b{color:#6366f1}
+button,input,textarea,select{font:inherit}button{cursor:pointer;border:0}.icon{width:42px;height:42px;border-radius:13px;background:#fff;border:1px solid #e5e7eb}
+body.dark .icon,body.dark .card,body.dark input,body.dark textarea,body.dark select{background:#151c2e;color:#fff;border-color:#273149}
+.clock{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:24px;padding:25px;margin-bottom:15px}.time{font-size:42px;font-weight:800}.date{opacity:.9}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:15px 0}.card{background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:16px}.stat{font-size:22px;font-weight:800}.muted{font-size:12px;color:#6b7280}
+.head{display:flex;justify-content:space-between;align-items:center;margin:22px 0 10px}.head h2{font-size:19px;margin:0}
+.btn{padding:11px 15px;border-radius:12px;background:#6366f1;color:white;font-weight:700}.danger{background:#ef4444}.green{background:#10b981}.secondary{background:#fff;color:#111827;border:1px solid #e5e7eb}
+body.dark .secondary{background:#151c2e;color:#fff;border-color:#273149}
+.presets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.presets button{padding:12px;border-radius:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px}.timer{padding:17px}.timerTop{display:flex;justify-content:space-between;gap:8px}.timerName{font-weight:800;font-size:18px}.badge{font-size:11px;padding:5px 8px;border-radius:20px;background:#e5e7eb}
+.running{background:#d1fae5;color:#047857}.paused{background:#fef3c7;color:#92400e}.display{text-align:center;font-size:42px;font-weight:800;margin:20px 0 5px}
+.progress{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin:12px 0}.bar{height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.info{border-top:1px solid #e5e7eb;margin-top:13px;padding-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+body.dark .info{border-color:#273149}.empty{text-align:center;padding:35px;color:#6b7280;border:1px dashed #d1d5db;border-radius:18px}
+input,textarea,select{width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;color:#111827;outline:0}.form{margin-bottom:13px}.form label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.page{display:none}.page.active{display:block}
+.history{margin-bottom:10px}.historyTop{display:flex;justify-content:space-between}.tag{display:inline-block;padding:5px 8px;background:#f3f4f6;border-radius:8px;font-size:11px;margin:8px 5px 0 0}body.dark .tag{background:#202a40}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #e5e7eb;z-index:20;padding:7px env(safe-area-inset-right) calc(7px + env(safe-area-inset-bottom)) env(safe-area-inset-left)}body.dark .nav{background:#151c2e;border-color:#273149}
+.navin{max-width:700px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr)}.nav button{background:transparent;color:#6b7280;padding:8px;font-size:11px}.nav button.active{color:#6366f1;font-weight:800}.nav span{display:block;font-size:20px}
+.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:flex-end;justify-content:center;padding:10px;z-index:50}.modalBox{background:#fff;color:#111827;border-radius:24px;padding:20px;width:100%;max-width:500px;max-height:90vh;overflow:auto}body.dark .modalBox{background:#151c2e;color:#fff}.modalHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.close{width:35px;height:35px;border-radius:10px}.modalActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:15px}.hidden{display:none!important}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:12px 16px;border-radius:12px;z-index:100;font-size:13px}
+@media(max-width:500px){.app{padding:14px}.time{font-size:35px}.display{font-size:37px}.stats{gap:6px}.card{padding:12px}.stat{font-size:18px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand">Focus<b>Track</b></div><button class="icon" id="theme">🌙</button></header>
+
+<section id="home" class="page active">
+<div class="clock"><div class="time" id="clock"></div><div class="date" id="date"></div></div>
+<div class="stats">
+<div class="card"><div class="stat" id="today">0m</div><div class="muted">Today's Focus</div></div>
+<div class="card"><div class="stat" id="sessions">0</div><div class="muted">Sessions</div></div>
+<div class="card"><div class="stat" id="total">0m</div><div class="muted">Total Focus</div></div>
+</div>
+<div class="head"><h2>Quick Start</h2><button class="btn" onclick="openModal()">+ New</button></div>
+<div class="presets"><button onclick="quick(25)">25 min</button><button onclick="quick(50)">50 min</button><button onclick="quick(60)">60 min</button></div>
+<div class="head"><h2>Active Timers</h2></div><div id="homeTimers"></div>
+</section>
+
+<section id="focus" class="page">
+<div class="head"><h2>Focus Timers</h2><button class="btn" onclick="openModal()">+ Timer</button></div>
+<div id="focusTimers"></div>
+<div class="head"><h2>Statistics</h2></div>
+<div class="card"><div class="stat" id="week">0m</div><div class="muted">Last 7 days focus</div></div>
+<div class="stats">
+<div class="card"><div class="stat" id="completed">0</div><div class="muted">Completed</div></div>
+<div class="card"><div class="stat" id="average">0m</div><div class="muted">Average</div></div>
+<div class="card"><div class="stat" id="pauses">0</div><div class="muted">Pauses</div></div>
+</div>
+</section>
+
+<section id="history" class="page">
+<div class="head"><h2>History</h2></div>
+<div class="row" style="margin-bottom:12px"><input id="search" placeholder="🔎 Search..." oninput="render()"><select id="filter" onchange="render()"><option value="all">All</option><option value="today">Today</option><option value="week">7 days</option></select></div>
+<div id="historyList"></div>
+</section>
+
+<section id="settings" class="page">
+<div class="head"><h2>Settings</h2></div>
+<div class="card">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #e5e7eb"><div><b>Dark Mode</b><div class="muted">Change appearance</div></div><button class="btn secondary" onclick="toggleTheme()">Toggle</button></div>
+<div style="padding:15px 0"><b>Notifications</b><div class="muted" style="margin:4px 0 10px">Get notified when a session finishes.</div><button class="btn" onclick="notifications()">Enable</button></div>
+<div style="padding-top:10px;border-top:1px solid #e5e7eb"><button class="btn danger" onclick="clearData()">Clear All Data</button></div>
+</div>
+</section>
+</div>
+
+<nav class="nav"><div class="navin">
+<button class="active" onclick="page('home',this)"><span>🏠</span>Home</button>
+<button onclick="page('focus',this)"><span>⏱️</span>Focus</button>
+<button onclick="page('history',this)"><span>📜</span>History</button>
+<button onclick="page('settings',this)"><span>⚙️</span>Settings</button>
+</div></nav>
+
+<div class="modal hidden" id="modal"><div class="modalBox">
+<div class="modalHead"><h2>New Timer</h2><button class="close" onclick="closeModal()">✕</button></div>
+<div class="form"><label>Name</label><input id="name" placeholder="e.g. Maths Study"></div>
+<div class="row"><div class="form"><label>Hours</label><input id="hours" type="number" min="0" value="0"></div><div class="form"><label>Minutes</label><input id="minutes" type="number" min="1" value="25"></div></div>
+<div class="form"><label>Activity / Note</label><textarea id="note" rows="3" placeholder="What are you working on?"></textarea></div>
+<div class="modalActions"><button class="btn secondary" onclick="closeModal()">Cancel</button><button class="btn" onclick="create()">Create</button></div>
+</div></div>
+<div id="toast" class="toast hidden"></div>
+
+<script>
+const KEY="focustrack-v1";
+let data=JSON.parse(localStorage.getItem(KEY)||'null')||{timers:[],history:[],theme:"light"};
+const $=id=>document.getElementById(id), now=()=>Date.now();
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function esc(x){return String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function fmt(ms){let s=Math.max(0,Math.floor(ms/1000)),h=Math.floor(s/3600);s%=3600;let m=Math.floor(s/60);s%=60;return h?`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`:`${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`}
+function short(ms){let m=Math.floor(ms/60000);if(m>=60)return `${Math.floor(m/60)}h ${m%60}m`;return `${m}m`}
+function key(t){let d=new Date(t);return d.toISOString().slice(0,10)}
+function calc(t,at=now()){let active=0,paused=0,pauses=0,start=null,pause=null;for(const e of t.events){if(e.type==="start")start=e.time;if(e.type==="pause"&&start!==null){active+=e.time-start;start=null;pause=e.time;pauses++}if(e.type==="resume"&&pause!==null){paused+=e.time-pause;pause=null;start=e.time}if(e.type==="stop"||e.type==="complete"){if(start!==null)active+=e.time-start;if(pause!==null)paused+=e.time-pause;start=null;pause=null}}if(start!==null)active+=at-start;if(pause!==null)paused+=at-pause;return{active,paused,pauses,remaining:Math.max(0,t.planned-active)}}
+function create(){let planned=((+hours.value||0)*60+(+minutes.value||0))*60000;if(!planned)return toast("Enter duration");data.timers.unshift({id:uid(),name:name.value.trim()||"Focus Session",planned,note:note.value.trim(),createdAt:now(),status:"idle",events:[]});save();closeModal();reset();render();toast("Timer created")}
+function reset(){name.value="";hours.value=0;minutes.value=25;note.value=""}
+function start(id){let t=data.timers.find(x=>x.id===id);if(!t)return; t.events.push({type:t.status==="paused"?"resume":"start",time:now()});t.status="running";save();render()}
+function pause(id){let t=data.timers.find(x=>x.id===id);if(!t)return;t.events.push({type:"pause",time:now()});t.status="paused";save();render()}
+function finish(id,status="completed",automatic=false){let t=data.timers.find(x=>x.id===id);if(!t)return;let at=now();t.events.push({type:status==="completed"?"complete":"stop",time:at});let c=calc(t,at);data.history.unshift({...t,status,finishedAt:at,activeDuration:c.active,pausedDuration:c.paused,pauseCount:c.pauses});data.timers=data.timers.filter(x=>x.id!==id);save();render();if(automatic){toast("Focus completed 🎉");notify("Focus session completed 🎉",t.name)}}
+function resetTimer(id){let t=data.timers.find(x=>x.id===id);if(!t)return;t.status="idle";t.events=[];save();render()}
+function card(t){let c=calc(t),p=Math.min(100,c.active/t.planned*100);let cls=t.status==="running"?"running":t.status==="paused"?"paused":"";let label=t.status==="running"?"Running":t.status==="paused"?"Paused":"Ready";return `<div class="card timer"><div class="timerTop"><div><div class="timerName">${esc(t.name)}</div><div class="muted">${esc(t.note||"")}</div></div><span class="badge ${cls}">${label}</span></div><div class="display">${fmt(c.remaining)}</div><div class="muted" style="text-align:center">${short(c.active)} active / ${short(t.planned)} planned</div><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="actions">${t.status==="running"?`<button class="btn secondary" onclick="pause('${t.id}')">⏸ Pause</button>`:`<button class="btn" onclick="start('${t.id}')">▶ ${t.status==="paused"?"Resume":"Start"}</button>`}<button class="btn danger" onclick="finish('${t.id}','stopped')">■ Stop</button><button class="btn secondary" onclick="resetTimer('${t.id}')">↻ Reset</button><button class="btn green" onclick="finish('${t.id}')">✓ Complete</button></div><div class="info"><div class="muted">Planned<b>${short(t.planned)}</b></div><div class="muted">Active<b>${short(c.active)}</b></div><div class="muted">Paused<b>${short(c.paused)}</b></div><div class="muted">Pauses<b>${c.pauses}</b></div></div></div>`}
+function render(){let html=data.timers.length?`<div class="grid">${data.timers.map(card).join("")}</div>`:`<div class="empty">⏱️<br><br>No active timers.<br>Create one and start focusing.</div>`;$("homeTimers").innerHTML=html;$("focusTimers").innerHTML=html;let s=($("search").value||"").toLowerCase(),f=$("filter").value,list=data.history.filter(x=>x.name.toLowerCase().includes(s)||(x.note||"").toLowerCase().includes(s));if(f==="today")list=list.filter(x=>key(x.finishedAt)===key(now()));if(f==="week")list=list.filter(x=>now()-x.finishedAt<=604800000);$("historyList").innerHTML=list.length?list.map(x=>`<div class="card history"><div class="historyTop"><b>${esc(x.name)}</b><b>${short(x.activeDuration)}</b></div><div class="muted">${new Date(x.finishedAt).toLocaleString()}</div><span class="tag">Planned ${short(x.planned)}</span><span class="tag">Paused ${short(x.pausedDuration)}</span><span class="tag">Pauses ${x.pauseCount}</span><span class="tag">${x.status}</span>${x.note?`<div class="muted" style="margin-top:8px">📝 ${esc(x.note)}</div>`:""}<br><button class="btn danger" style="margin-top:10px;padding:7px 10px;font-size:12px" onclick="del('${x.id}')">Delete</button></div>`).join(""):`<div class="empty">📜<br><br>No history found.</div>`;stats()}
+function stats(){let todayList=data.history.filter(x=>key(x.finishedAt)===key(now())),todayMs=todayList.reduce((a,x)=>a+x.activeDuration,0),total=data.history.reduce((a,x)=>a+x.activeDuration,0),week=data.history.filter(x=>now()-x.finishedAt<=604800000).reduce((a,x)=>a+x.activeDuration,0);$("today").textContent=short(todayMs);$("sessions").textContent=todayList.length;$("total").textContent=short(total);$("week").textContent=short(week);$("completed").textContent=data.history.length;$("average").textContent=short(data.history.length?total/data.history.length:0);$("pauses").textContent=data.history.reduce((a,x)=>a+x.pauseCount,0)}
+function del(id){data.history=data.history.filter(x=>x.id!==id);save();render()}
+function page(id,b){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");b.classList.add("active")}
+function openModal(){modal.classList.remove("hidden");name.focus()}function closeModal(){modal.classList.add("hidden")}function quick(m){name.value=`${m} Minute Focus`;minutes.value=m;openModal()}
+function toggleTheme(){data.theme=data.theme==="dark"?"light":"dark";save();applyTheme()}
+function applyTheme(){document.body.classList.toggle("dark",data.theme==="dark");theme.textContent=data.theme==="dark"?"☀️":"🌙"}function notifications(){if(!("Notification"in window))return toast("Notifications unsupported");Notification.requestPermission().then(x=>toast(x==="granted"?"Notifications enabled 🔔":"Permission denied"))}
+function notify(a,b){if("Notification"in window&&Notification.permission==="granted")new Notification(a,{body:b})}
+function clearData(){if(confirm("Delete all timers and history?")){data.timers=[];data.history=[];save();render();toast("All data cleared")}}
+function toast(x){let t=$("toast");t.textContent=x;t.classList.remove("hidden");clearTimeout(window.tt);window.tt=setTimeout(()=>t.classList.add("hidden"),2200)}
+function tick(){let d=new Date();$("clock").textContent=d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false});$("date").textContent=d.toLocaleDateString([],{weekday:"long",day:"numeric",month:"long",year:"numeric"});for(const t of [...data.timers])if(t.status==="running"&&calc(t).active>=t.planned)finish(t.id,"completed",true);render()}
+theme.onclick=toggleTheme;applyTheme();render();tick();setInterval(tick,1000);
+</script>
+</body>
+</html>
